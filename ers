@@ -1,0 +1,21 @@
+                  List of relations
+ Schema |            Name            | Type  | Owner 
+--------+----------------------------+-------+-------
+ public | Users                      | table | hsh
+ public | auth_group                 | table | hsh
+ public | auth_group_permissions     | table | hsh
+ public | auth_permission            | table | hsh
+ public | auth_user                  | table | hsh
+ public | auth_user_groups           | table | hsh
+ public | auth_user_user_permissions | table | hsh
+ public | django_admin_log           | table | hsh
+ public | django_content_type        | table | hsh
+ public | django_migrations          | table | hsh
+ public | django_session             | table | hsh
+ public | friendships                | table | hsh
+ public | likes                      | table | hsh
+ public | matches                    | table | hsh
+ public | messages                   | table | hsh
+ public | users                      | table | hsh
+(16 rows)
+
