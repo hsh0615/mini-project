@@ -26,17 +26,27 @@ class RegisterView(APIView):
                 return Response({'error': '用戶名已存在'}, status=status.HTTP_409_CONFLICT)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# 登入視圖
 class LoginView(APIView):
     def post(self, request):
+        # 從請求中獲取帳號和密碼
         username = request.data.get('username')
         password = request.data.get('password')
+
+        # 認證使用者
         user = authenticate(username=username, password=password)
 
         if user:
-            return Response({'message': '登入成功', 'user': {'username': user.username}}, status=status.HTTP_200_OK)
+            # 如果認證成功，回傳登入成功訊息
+            return Response(
+                {'message': '登入成功', 'user': {'username': user.username}},
+                status=status.HTTP_200_OK
+            )
         else:
-            return Response({'message': '帳號或密碼錯誤'}, status=status.HTTP_401_UNAUTHORIZED)
+            # 如果認證失敗，回傳錯誤訊息
+            return Response(
+                {'message': '帳號或密碼錯誤'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
 import logging
 
