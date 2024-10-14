@@ -7,24 +7,36 @@ from django.contrib.auth import authenticate
 from rest_framework.decorators import api_view
 from django.db import IntegrityError
 # api/views.py
-from django.contrib.auth.models import User
+# 確保導入的是自訂的 User 模型
+from .models import User  # 而非 from django.contrib.auth.models import User
+
 from .models import Match, Like, Friendship
 
 # 配對池和配對結果
 matching_pool = []
 match_results = {}
 
-# 註冊視圖
+
 class RegisterView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             try:
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                return Response(
+                    {"Status": "Success", "Data": serializer.data},
+                    status=status.HTTP_201_CREATED
+                )
             except IntegrityError:
-                return Response({'error': '用戶名已存在'}, status=status.HTTP_409_CONFLICT)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"Status": "Failure", "error": "用戶名已存在"},
+                    status=status.HTTP_409_CONFLICT
+                )
+        return Response(
+            {"Status": "Failure", "errors": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
 
 class LoginView(APIView):
     def post(self, request):
@@ -55,12 +67,16 @@ logger = logging.getLogger(__name__)
 class MatchView(APIView):
     def post(self, request):
         username = request.data.get('username')
-        
+          
         if not username:
             return Response({'message': '用戶名不能為空'}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = User.objects.get(username=username)
+        try:
+            user = User.objects.get(username=username.strip())  # 去除多餘空白
+        except User.DoesNotExist:
+            return Response({'message': '該用戶不存在'}, status=status.HTTP_404_NOT_FOUND)
 
+        # 檢查使用者是否已經在配對池中
         if username in matching_pool:
             return Response({'message': '您已經在等待配對中，請耐心等待'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -86,6 +102,11 @@ class MatchView(APIView):
                     return Response({'message': f'配對成功！配對對象: {other_username}', 'match_id': match.id}, status=status.HTTP_200_OK)
 
         return Response({'message': '等待配對中...'}, status=status.HTTP_200_OK)
+    
+
+class MatchingPoolView(APIView):
+    def get(self, request):
+        return Response({'matching_pool': matching_pool}, status=status.HTTP_200_OK)
     
 @api_view(['GET'])
 def match_result(request, username):

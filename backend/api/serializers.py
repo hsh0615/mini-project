@@ -1,11 +1,11 @@
 from rest_framework import serializers
-from .models import User  # 引入你自定義的 User 模型
+from .models import User, Match, Message, Friendship, Like
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'password']  # 根據你的自定義模型調整欄位
-        extra_kwargs = {'password': {'write_only': True}}  # 密碼只能寫入，不能讀取
+        fields = ['id', 'username', 'password', 'is_active']
+        extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         user = User.objects.create_user(
@@ -13,3 +13,23 @@ class UserSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         )
         return user
+
+class MatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Match
+        fields = '__all__'
+
+class MessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = '__all__'
+
+class FriendshipSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Friendship
+        fields = '__all__'
+
+class LikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = '__all__'
