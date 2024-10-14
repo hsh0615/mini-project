@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function Login() {
-  const [username, setUsername] = useState(localStorage.getItem('username') || '');
+  const [username, setUsername] = useState(sessionStorage.getItem('username') || '');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
@@ -42,7 +42,7 @@ function Login() {
       const data = await response.json();
       if (response.ok) {
         setMessage(`歡迎回來，${data.user.username}`);
-        localStorage.setItem('username', data.user.username); // 儲存用戶名
+        sessionStorage.setItem('username', data.user.username); // 儲存用戶名
         navigate('/Match'); // 跳轉到配對頁面
       } else {
         setMessage('登入失敗');

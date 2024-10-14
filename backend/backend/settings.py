@@ -40,14 +40,26 @@ INSTALLED_APPS = [
 
     # 第三方庫
     'rest_framework',  # Django REST Framework
-
+    'channels',
     # 本地應用
     'api',
     
     'corsheaders',
 ]
+
+ASGI_APPLICATION = 'backend.asgi.application'  # 加入 ASGI 應用
 # 允許來自所有來源的跨域請求（測試環境）
 CORS_ALLOW_ALL_ORIGINS = True
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
