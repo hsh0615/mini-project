@@ -18,7 +18,7 @@ function Login() {
       
       if (response.ok) {
         const data = await response.json();
-        setMessage(`註冊成功，歡迎 ${data.username}`);
+        setMessage(`註冊成功，歡迎 ${data.Data.username}`);
       } else if (response.status === 409) {
         setMessage('用戶名已存在，請選擇其他用戶名');
         setUsername(''); // 清空用戶名輸入框

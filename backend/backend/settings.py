@@ -64,6 +64,7 @@ MIDDLEWARE = [
 ]
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3002',  # React 開發伺服器的地址
+    'http://localhost:3000',
 ]
 ROOT_URLCONF = 'backend.urls'
 
@@ -147,5 +148,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3002',
+    'http://localhost:3000',
 ]
 APPEND_SLASH = False
