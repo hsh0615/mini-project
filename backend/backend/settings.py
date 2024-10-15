@@ -40,11 +40,11 @@ INSTALLED_APPS = [
 
     # 第三方庫
     'rest_framework',  # Django REST Framework
-    'channels',
     # 本地應用
     'api',
     
     'corsheaders',
+    'channels',  # 确保 Django Channels 已安装
 ]
 
 ASGI_APPLICATION = 'backend.asgi.application'  # 加入 ASGI 應用
@@ -54,6 +54,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        # 'BACKEND': 'channels.layers.InMemoryChannelLayer',
         'CONFIG': {
             "hosts": [('127.0.0.1', 6379)],
         },
@@ -78,11 +79,36 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3002',  # React 開發伺服器的地址
     'http://localhost:3000',
 ]
-ROOT_URLCONF = 'backend.urls'
+# 如果您使用的是 Cookie 进行身份验证，需要启用以下配置
+CORS_ALLOW_CREDENTIALS = True
 
+# 允许的请求头
+CORS_ALLOW_HEADERS = [
+    'authorization',
+    'content-type',
+    'x-csrftoken',
+    'x-requested-with',
+    'accept',
+    'origin',
+    'user-agent',
+    'accept-encoding',
+    'connection',
+    'cookie',
+    'host',
+    'referer',
+    'sec-fetch-mode',
+    'sec-fetch-site',
+    'sec-fetch-dest',
+]
+
+
+ROOT_URLCONF = 'backend.urls'
+import os
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],  # 專案級模板目錄
+        'APP_DIRS': True,  # 啟用應用程式內的 templates 目錄
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {

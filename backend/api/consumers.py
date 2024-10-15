@@ -2,31 +2,43 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 
-class MatchConsumer(AsyncWebsocketConsumer):
+class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        """當使用者連接 WebSocket 時執行"""
-        self.username = self.scope['query_string'].decode('utf-8').split('=')[1]
-        await self.channel_layer.group_add("matching_pool", self.channel_name)
+        self.room_name = self.scope['url_route']['kwargs']['room_name']
+        self.room_group_name = f'chat_{self.room_name}'
+
+        # 加入房間群組
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name
+        )
+
         await self.accept()
 
     async def disconnect(self, close_code):
-        """當使用者斷開 WebSocket 時執行"""
-        await self.channel_layer.group_discard("matching_pool", self.channel_name)
+        # 離開房間群組
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
+        )
 
     async def receive(self, text_data):
-        """當 WebSocket 接收到訊息時執行"""
-        data = json.loads(text_data)
+        text_data_json = json.loads(text_data)
+        message = text_data_json['message']
 
-        if data.get('action') == 'match':
-            await self.channel_layer.group_send(
-                "matching_pool",
-                {
-                    'type': 'match.message',
-                    'message': f"{self.username} is looking for a match!",
-                }
-            )
+        # 發送消息到房間群組
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'chat_message',
+                'message': message
+            }
+        )
 
-    async def match_message(self, event):
-        """當配對訊息被傳送時執行"""
+    async def chat_message(self, event):
         message = event['message']
-        await self.send(text_data=json.dumps({'message': message}))
+
+        # 發送消息到 WebSocket
+        await self.send(text_data=json.dumps({
+            'message': message
+        }))
