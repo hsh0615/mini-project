@@ -5,22 +5,24 @@ function Chat() {
   const { matchId } = useParams();
   const [matchedUser, setMatchedUser] = useState('');
   const [message, setMessage] = useState('');
+  const [chatLog, setChatLog] = useState([]); // 儲存聊天記錄
+  const [isConnected, setIsConnected] = useState(false); // 用於追踪 WebSocket 連接狀態
   const username = sessionStorage.getItem('username');
   const navigate = useNavigate();
   const location = useLocation();
   const heartbeatIntervalRef = useRef(null); // 用於心跳請求
+  const socketRef = useRef(null); // WebSocket 引用
 
   useEffect(() => {
-    console.log(`[DEBUG] Username: ${username}`); // Debugging 用户名
-    console.log(`[DEBUG] Match ID: ${matchId}`); // Debugging Match ID
-    console.log(`[DEBUG] Location State:`, location.state); // Debugging 位置状态
+    console.log(`[DEBUG] Location State:`, location.state); // 打印状态以进行调试
+    console.log(`[DEBUG] Username: ${username}`);
+    console.log(`[DEBUG] Match ID: ${matchId}`);
+    console.log(`[DEBUG] Location State:`, location.state);
 
-    // 在位置狀態中獲取配對用戶
     if (location.state && location.state.matchedUsername) {
       console.log(`[DEBUG] 从 Location State 中获取的配对用户: ${location.state.matchedUsername}`);
       setMatchedUser(location.state.matchedUsername);
     } else {
-      // 從後端獲取配對用戶
       const fetchMatchedUser = async () => {
         console.log(`[DEBUG] 正在从后端获取配对用户：${matchId}`);
         try {
@@ -42,7 +44,6 @@ function Chat() {
       fetchMatchedUser();
     }
 
-    // 發送心跳請求的函數
     const sendHeartbeat = () => {
       fetch('http://localhost:8050/api/heartbeat/', {
         method: 'POST',
@@ -54,16 +55,49 @@ function Chat() {
       .catch(error => console.error('心跳錯誤:', error));
     };
 
-    // 每30秒發送一次心跳請求
     heartbeatIntervalRef.current = setInterval(sendHeartbeat, 30000);
     
     return () => {
-      // 組件卸載時清除定時器
       if (heartbeatIntervalRef.current) {
-        clearInterval(heartbeatIntervalRef.current); // 清除心跳請求定時器
+        clearInterval(heartbeatIntervalRef.current);
       }
     };
   }, [matchId, username, navigate, location.state]);
+
+  // 新增的 WebSocket useEffect
+  useEffect(() => {
+    // 初始化 WebSocket 連接
+    const ws = new WebSocket(`ws://localhost:8080/ws/Chat/${matchId}/`);
+
+    ws.onopen = () => {
+      console.log('WebSocket 連接已建立');
+      setIsConnected(true); // 更新連接狀態
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      const { message, username } = data; // 获取消息和用户名
+    
+      // 检查用户名是否存在
+      const displayName = username || 'Unknown';
+    
+      setChatLog(prevChatLog => [...prevChatLog, `${displayName}: ${message}`]);
+    };
+    
+
+    ws.onclose = () => {
+      console.log('WebSocket 連接已關閉');
+      setIsConnected(false); // 更新連接狀態
+    };
+
+    socketRef.current = ws; // 存儲 WebSocket 連接
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.close(); // 清理 WebSocket 連接
+      }
+    };
+  }, [matchId]);
 
   const handleLike = async () => {
     console.log('[INFO] 用户点击了喜欢');
@@ -96,12 +130,25 @@ function Chat() {
     navigate('/Match'); // 返回配对页面
   };
 
+  const handleSendMessage = () => {
+    if (socketRef.current && message.trim()) {
+      const msg = { username, message }; // 确保包含用户名
+      socketRef.current.send(JSON.stringify(msg));
+      setMessage('');
+    }
+  };
+  
+  
+
   return (
     <div>
       <h2>聊天页面</h2>
       <p>配对对象：{matchedUser}</p>
       <div style={{ border: '1px solid black', height: '300px', overflowY: 'scroll' }}>
-        {/* 這裡可以顯示聊天消息 */}
+        {/* 顯示聊天記錄 */}
+        {chatLog.map((msg, index) => (
+          <p key={index}>{msg}</p>
+        ))}
       </div>
       <input
         type="text"
@@ -109,9 +156,9 @@ function Chat() {
         value={message}
         onChange={(e) => setMessage(e.target.value)}
       />
+      <button onClick={handleSendMessage} disabled={!isConnected}>发送</button> {/* 新增發送按鈕 */}
       <button onClick={handleLike}>喜欢</button>
       <button onClick={handleLeave}>离开</button>
-      <p>{message}</p>
     </div>
   );
 }

@@ -33,8 +33,6 @@ from django.db import connection
 from django.shortcuts import render
 from django.http import JsonResponse
 
-# 只列出特定資料表
-TARGET_TABLES = ['api_user', 'api_match', 'api_friendship', 'api_like', 'api_message']
 
 # 定義要操作的表格
 TARGET_TABLES = ['api_user', 'api_match', 'api_friendship', 'api_like', 'api_message']

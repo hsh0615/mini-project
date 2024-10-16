@@ -1,7 +1,6 @@
 // src/Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
 function Login() {
   const [username, setUsername] = useState(sessionStorage.getItem('username') || '');
   const [password, setPassword] = useState('');

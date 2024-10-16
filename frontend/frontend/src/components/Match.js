@@ -21,6 +21,9 @@ function Match() {
         .catch((error) => console.error('心跳錯誤:', error));
     };
 
+    // 在這裡立即發送心跳請求
+    sendHeartbeat();
+    
     heartbeatIntervalRef.current = setInterval(sendHeartbeat, 30000);
 
     return () => {
@@ -61,6 +64,7 @@ function Match() {
 
         if (data.match_id) {
           clearInterval(intervalRef.current);
+          console.log('[DEBUG] Data before navigating:', data);
           navigate(`/Chat/${data.match_id}`, { state: { matchedUsername: data.matched_username } });
         } else {
           setMessage(data.message || '等待配對中...');
