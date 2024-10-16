@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selected Tables Database Monitor</title>
+    <script>
+        // 清空資料庫的功能
+        function clearDatabase() {
+            if (confirm("你確定要清空所有資料表嗎？這個操作無法復原！")) {
+                fetch('/api/clear-database/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    location.reload();  // 清空後重新載入頁面
+                })
+                .catch(error => console.error('清空資料庫時出錯:', error));
+            }
+        }
+
+        // 在頁面載入時取得在線使用者和配對池狀態
+        function fetchStatusData() {
+            fetch('/api/online-users/')
+                .then(response => response.json())
+                .then(data => updateOnlineUsers(data.online_users))
+                .catch(error => console.error('取得在線使用者時出錯:', error));
+
+            fetch('/api/matching-pool/')
+                .then(response => response.json())
+                .then(data => updateMatchingPool(data.matching_pool))
+                .catch(error => console.error('取得配對池資料時出錯:', error));
+        }
+
+        // 更新在線使用者
+        function updateOnlineUsers(users) {
+            const container = document.getElementById('online-users');
+            container.innerHTML = ''; // 清空現有內容
+            if (users.length > 0) {
+                users.forEach(user => {
+                    const ttl = user.ttl > 0 ? user.ttl : '已過期'; // 檢查 TTL
+                    const userElement = document.createElement('p');
+                    userElement.textContent = `${user.username} (剩餘時間: ${ttl}秒)`;
+                    container.appendChild(userElement);
+                });
+            } else {
+                container.innerHTML = '無在線使用者';
+            }
+        }
+
+        // 更新配對池狀態
+        function updateMatchingPool(pool) {
+            const container = document.getElementById('matching-pool');
+            container.innerHTML = pool.length > 0 
+                ? pool.join(', ') 
+                : '配對池目前無人';
+        }
+
+        // 頁面載入時取得資料
+        window.onload = fetchStatusData;
+    </script>
+</head>
+<body>
+    <h1>Selected Tables Database Monitor</h1>
+
+    <!-- 在線使用者 -->
+    <div>
+        <h2>在線使用者</h2>
+        <div id="online-users">載入中...</div>
+    </div>
+
+    <!-- 配對池狀態 -->
+    <div>
+        <h2>配對池狀態</h2>
+        <p id="matching-pool">載入中...</p>
+    </div>
+
+    <!-- 清空資料庫按鈕 -->
+    <button onclick="clearDatabase()">清空資料庫</button>
+
+    <!-- 顯示資料表內容 -->
+    {% for table in tables %}
+        <h2>表格名稱：{{ table.name }}（記錄數量：{{ table.count }}）</h2>
+        <table border="1" cellpadding="5" cellspacing="0">
+            <thead>
+                <tr>
+                    {% for column in table.columns %}
+                        <th>{{ column }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in table.records %}
+                    <tr>
+                        {% for value in record %}
+                            <td>{{ value }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
+</body>
+</html>

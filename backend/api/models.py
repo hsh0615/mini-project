@@ -26,6 +26,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser):
     username = models.CharField(max_length=150, unique=True)  # 唯一帳號
     password = models.CharField(max_length=128)  # 密碼欄位
+    #is_online = models.BooleanField(default=False)  # 新增在線狀態
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
