@@ -1,12 +1,12 @@
 # consumers.py
-
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         print("Attempting to connect...")
-        self.match_id = self.scope['url_route']['kwargs']['matchId']
+        print(f"[DEBUG] Scope: {self.scope}")  # 输出 scope
+        self.match_id = self.scope['url_route']['kwargs']['match_id']  # 确保使用 match_id
         self.room_group_name = f"chat_{self.match_id}"
 
         # 加入房间组
