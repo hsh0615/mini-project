@@ -6,7 +6,7 @@ function Chat() {
   const [matchedUser, setMatchedUser] = useState('');
   const [message, setMessage] = useState('');
   const [chatLog, setChatLog] = useState([]); // 儲存聊天記錄
-  const [isConnected, setIsConnected] = useState(false); // 用於追踪 WebSocket 連接狀態
+  const [isConnected, setIsConnected] = useState(false); // 用於追蹤 WebSocket 連接狀態
   const username = sessionStorage.getItem('username');
   const navigate = useNavigate();
   const location = useLocation();
@@ -14,29 +14,29 @@ function Chat() {
   const socketRef = useRef(null); // WebSocket 引用
 
   useEffect(() => {
-    console.log(`[DEBUG] Location State:`, location.state); // 打印状态以进行调试
+    console.log(`[DEBUG] Location State:`, location.state); // 打印狀態以進行調試
     console.log(`[DEBUG] Username: ${username}`);
     console.log(`[DEBUG] Match ID: ${matchId}`);
     console.log(`[DEBUG] Location State:`, location.state);
 
     if (location.state && location.state.matchedUsername) {
-      console.log(`[DEBUG] 从 Location State 中获取的配对用户: ${location.state.matchedUsername}`);
+      console.log(`[DEBUG] 從 Location State 中獲取的配對用戶: ${location.state.matchedUsername}`);
       setMatchedUser(location.state.matchedUsername);
     } else {
       const fetchMatchedUser = async () => {
-        console.log(`[DEBUG] 正在从后端获取配对用户：${matchId}`);
+        console.log(`[DEBUG] 正在從後端獲取配對用戶：${matchId}`);
         try {
           const response = await fetch(`http://localhost:8050/api/get-matched-user/${matchId}/?username=${username}`);
           const data = await response.json();
           if (response.ok) {
-            console.log('[DEBUG] 成功获取配对用户:', data.matched_username);
+            console.log('[DEBUG] 成功獲取配對用戶:', data.matched_username);
             setMatchedUser(data.matched_username);
           } else {
-            console.error('[ERROR] 获取配对对象失败:', data);
+            console.error('[ERROR] 獲取配對對象失敗:', data);
             setMessage('獲取配對對象失敗');
           }
         } catch (error) {
-          console.error('[ERROR] 发生错误:', error);
+          console.error('[ERROR] 發生錯誤:', error);
           setMessage('獲取配對對象失敗');
         }
       };
@@ -76,9 +76,9 @@ function Chat() {
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      const { message, username } = data; // 获取消息和用户名
+      const { message, username } = data; // 獲取消息和用戶名
     
-      // 检查用户名是否存在
+      // 檢查用戶名是否存在
       const displayName = username || 'Unknown';
     
       setChatLog(prevChatLog => [...prevChatLog, `${displayName}: ${message}`]);
@@ -100,7 +100,7 @@ function Chat() {
   }, [matchId]);
 
   const handleLike = async () => {
-    console.log('[INFO] 用户点击了喜欢');
+    console.log('[INFO] 用戶點擊了喜歡');
     try {
       const response = await fetch('http://localhost:8050/api/like/', {
         method: 'POST',
@@ -126,13 +126,13 @@ function Chat() {
   };
 
   const handleLeave = () => {
-    console.log('[INFO] 用户离开聊天页面');
-    navigate('/Match'); // 返回配对页面
+    console.log('[INFO] 用戶離開聊天頁面');
+    navigate('/Match'); // 返回配對頁面
   };
 
   const handleSendMessage = () => {
     if (socketRef.current && message.trim()) {
-      const msg = { username, message }; // 确保包含用户名
+      const msg = { username, message }; // 確保包含用戶名
       socketRef.current.send(JSON.stringify(msg));
       setMessage('');
     }
@@ -142,8 +142,8 @@ function Chat() {
 
   return (
     <div>
-      <h2>聊天页面</h2>
-      <p>配对对象：{matchedUser}</p>
+      <h2>聊天頁面</h2>
+      <p>配對對象：{matchedUser}</p>
       <div style={{ border: '1px solid black', height: '300px', overflowY: 'scroll' }}>
         {/* 顯示聊天記錄 */}
         {chatLog.map((msg, index) => (
@@ -152,13 +152,13 @@ function Chat() {
       </div>
       <input
         type="text"
-        placeholder="输入消息"
+        placeholder="輸入消息"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
       />
-      <button onClick={handleSendMessage} disabled={!isConnected}>发送</button> {/* 新增發送按鈕 */}
-      <button onClick={handleLike}>喜欢</button>
-      <button onClick={handleLeave}>离开</button>
+      <button onClick={handleSendMessage} disabled={!isConnected}>發送</button> {/* 新增發送按鈕 */}
+      <button onClick={handleLike}>喜歡</button>
+      <button onClick={handleLeave}>離開</button>
     </div>
   );
 }

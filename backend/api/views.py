@@ -12,7 +12,7 @@ from django.db import IntegrityError
 # 確保導入的是自訂的 User 模型
 from .models import User  # 而非 from django.contrib.auth.models import User
 #match-view solved (2024/10/14 )
-from .models import Match, Like, Friendship
+from .models import Match, Friendship
 
 import logging
 
@@ -35,7 +35,7 @@ from django.http import JsonResponse
 
 
 # 定義要操作的表格
-TARGET_TABLES = ['api_user', 'api_match', 'api_friendship', 'api_like', 'api_message']
+TARGET_TABLES = ['api_user', 'api_match', 'api_friendship',  'api_message']
 
 def database_monitor(request):
     table_data = []
@@ -84,6 +84,21 @@ def online_users(request):
         usernames_with_ttl.append({'username': username, 'ttl': ttl})
 
     return Response({'online_users': usernames_with_ttl}, status=status.HTTP_200_OK)
+
+# @api_view(['POST'])
+# def online_users(request):
+#     if request.data.get('check_online_users'):
+#         keys = redis_client.keys('online_users:*')
+#         usernames_with_ttl = []
+        
+#         for key in keys:
+#             username = key.decode().split(':')[1]
+#             ttl = redis_client.ttl(key)  # 獲取剩餘 TTL
+#             usernames_with_ttl.append({'username': username, 'ttl': ttl})
+
+#         return Response({'online_users': usernames_with_ttl}, status=status.HTTP_200_OK)
+#     else:
+#         return Response({'error': 'Invalid request'}, status=status.HTTP_400_BAD_REQUEST)
 
 def matching_pool(request):
     pool = [user.decode() for user in redis_client.smembers('matching_pool')]
@@ -313,9 +328,45 @@ class CancelMatchView(APIView):
         else:
             return Response({'message': '使用者不在配對池中'}, status=status.HTTP_400_BAD_REQUEST)
 
+# class LikeView(APIView):
+#     def post(self, request):
+#         username = request.data.get('username')
+#         match_id = request.data.get('match_id')
 
+#         try:
+#             user = User.objects.get(username=username)
+#             match = Match.objects.get(id=match_id)
+
+#             # 檢查用戶是否在該配對中
+#             if user != match.user1 and user != match.user2:
+#                 return Response({'message': '用戶不在該配對中'}, status=status.HTTP_400_BAD_REQUEST)
+
+#             # 檢查是否已經點過喜歡
+#             if Like.objects.filter(match=match, liker=user).exists():
+#                 return Response({'message': '您已經點過喜歡'}, status=status.HTTP_400_BAD_REQUEST)
+
+#             # 保存喜歡記錄
+#             Like.objects.create(match=match, liker=user)
+
+#             # 檢查對方是否也點了喜歡
+#             other_user = match.user2 if user == match.user1 else match.user1
+#             if Like.objects.filter(match=match, liker=other_user).exists():
+#                 # 雙方都點了喜歡，建立好友關係
+#                 Friendship.objects.create(user1=user, user2=other_user)
+#                 Friendship.objects.create(user1=other_user, user2=user)
+
+#                 # 將配對結果存入 Redis
+#                 redis_client.set(f"match_result:{user.username}", other_user.username)
+#                 redis_client.set(f"match_result:{other_user.username}", user.username)
+
+#                 return Response({'message': '恭喜！雙方都喜歡彼此，已建立好友關係。'}, status=status.HTTP_200_OK)
+#             else:
+#                 return Response({'message': '已送出喜歡，等待對方確認。'}, status=status.HTTP_200_OK)
+#         except User.DoesNotExist:
+#             return Response({'message': '用戶不存在'}, status=status.HTTP_404_NOT_FOUND)
+#         except Match.DoesNotExist:
+#             return Response({'message': '配對不存在'}, status=status.HTTP_404_NOT_FOUND)
 class LikeView(APIView):
-
     def post(self, request):
         username = request.data.get('username')
         match_id = request.data.get('match_id')
@@ -328,31 +379,33 @@ class LikeView(APIView):
             if user != match.user1 and user != match.user2:
                 return Response({'message': '用戶不在該配對中'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # 檢查是否已經點過喜歡
-            if Like.objects.filter(match=match, liker=user).exists():
+            # 使用 Redis 檢查用戶是否已經點過喜歡
+            if redis_client.get(f"like:{match.id}:{user.username}"):
                 return Response({'message': '您已經點過喜歡'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # 保存喜歡記錄
-            Like.objects.create(match=match, liker=user)
+            # 將 "喜歡" 記錄存入 Redis
+            redis_client.set(f"like:{match.id}:{user.username}", '1')
 
             # 檢查對方是否也點了喜歡
             other_user = match.user2 if user == match.user1 else match.user1
-            if Like.objects.filter(match=match, liker=other_user).exists():
+            if redis_client.get(f"like:{match.id}:{other_user.username}"):
                 # 雙方都點了喜歡，建立好友關係
                 Friendship.objects.create(user1=user, user2=other_user)
                 Friendship.objects.create(user1=other_user, user2=user)
 
-                # 將配對結果存入 Redis
+                # 將配對結果存入 Redis，表示雙方匹配成功
                 redis_client.set(f"match_result:{user.username}", other_user.username)
                 redis_client.set(f"match_result:{other_user.username}", user.username)
 
                 return Response({'message': '恭喜！雙方都喜歡彼此，已建立好友關係。'}, status=status.HTTP_200_OK)
             else:
                 return Response({'message': '已送出喜歡，等待對方確認。'}, status=status.HTTP_200_OK)
+
         except User.DoesNotExist:
             return Response({'message': '用戶不存在'}, status=status.HTTP_404_NOT_FOUND)
         except Match.DoesNotExist:
             return Response({'message': '配對不存在'}, status=status.HTTP_404_NOT_FOUND)
+
 
 @api_view(['GET'])
 def get_matched_user(request, match_id):
