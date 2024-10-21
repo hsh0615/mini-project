@@ -2,7 +2,7 @@
 
 # 啟動腳本 - create_django_app.sh
 
-
+cd ..
 # 載入環境變數，並考慮空格和引號
 if [ -f .env ]; then
     export $(grep -v '^#' .env | xargs)
