@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Button, Typography, Box, CircularProgress } from '@mui/material'; // 引入 MUI 組件
+
 
 function Match() {
   const [message, setMessage] = useState('');
@@ -97,20 +99,71 @@ function Match() {
     }
   };
 
-  return (
-    <div>
-      <h1>配對頁面</h1>
-      <p>{message}</p>
-      {isMatching ? (
-        <>
-          <button onClick={handleCancelMatch}>取消配對</button>
-        </>
-      ) : (
-        <button onClick={handleMatch}>開始配對</button>
-      )}
-      <button onClick={() => navigate('/friends')}>好友列表</button>
-    </div>
-  );
+//   return (
+//     <div>
+//       <h1>配對頁面</h1>
+//       <p>{message}</p>
+//       {isMatching ? (
+//         <>
+//           <button onClick={handleCancelMatch}>取消配對</button>
+//         </>
+//       ) : (
+//         <button onClick={handleMatch}>開始配對</button>
+//       )}
+//       <button onClick={() => navigate('/friends')}>好友列表</button>
+//     </div>
+//   );
+// }
+
+// export default Match;
+return (
+  <Box
+    display="flex"
+    flexDirection="column"
+    alignItems="center"
+    justifyContent="center"
+    minHeight="100vh"
+    padding={2}
+  >
+    <Typography variant="h4" gutterBottom>
+      配對頁面
+    </Typography>
+    <Typography variant="body1" gutterBottom color="textSecondary">
+      {message}
+    </Typography>
+    {isMatching ? (
+      <>
+        <Button
+          variant="contained"
+          color="error"
+          onClick={handleCancelMatch}
+          fullWidth
+          sx={{ mt: 2, mb: 2 }}
+        >
+          取消配對
+        </Button>
+      </>
+    ) : (
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleMatch}
+        fullWidth
+        sx={{ mt: 2, mb: 2 }}
+      >
+        {isMatching ? <CircularProgress size={24} /> : '開始配對'}
+      </Button>
+    )}
+    <Button
+      variant="outlined"
+      onClick={() => navigate('/friends')}
+      fullWidth
+      sx={{ mt: 2 }}
+    >
+      好友列表
+    </Button>
+  </Box>
+);
 }
 
 export default Match;

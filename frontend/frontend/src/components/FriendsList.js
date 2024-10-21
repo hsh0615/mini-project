@@ -1,6 +1,7 @@
 // src/FriendsList.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Typography, Button, List, ListItem, ListItemText, Box, Paper } from '@mui/material'; // 引入 MUI 元件
 
 function FriendsList() {
   const [friends, setFriends] = useState([]);
@@ -33,23 +34,63 @@ function FriendsList() {
     navigate(`/Chat/${friendUsername}`, { state: { friendUsername } }); // 導航並傳遞好友名稱
   };
 
-  return (
-    <div>
-      <h2>好友列表</h2>
+//   return (
+//     <div>
+//       <h2>好友列表</h2>
+//       {friends.length > 0 ? (
+//         <ul>
+//           {friends.map((friend, index) => (
+//             <li key={index}>
+//               {friend}
+//               <button onClick={() => handleChat(friend)}>聊天</button>
+//             </li>
+//           ))}
+//         </ul>
+//       ) : (
+//         <p>您還沒有好友。</p>
+//       )}
+//     </div>
+//   );
+// }
+
+// export default FriendsList;
+return (
+  <Box
+    display="flex"
+    flexDirection="column"
+    alignItems="center"
+    justifyContent="center"
+    padding={2}
+    minHeight="100vh"
+  >
+    <Typography variant="h4" gutterBottom>
+      好友列表
+    </Typography>
+
+    <Paper elevation={3} sx={{ width: '100%', maxWidth: 600, padding: 2 }}>
       {friends.length > 0 ? (
-        <ul>
+        <List>
           {friends.map((friend, index) => (
-            <li key={index}>
-              {friend}
-              <button onClick={() => handleChat(friend)}>聊天</button>
-            </li>
+            <ListItem key={index} sx={{ justifyContent: 'space-between' }}>
+              <ListItemText primary={friend} />
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => handleChat(friend)}
+              >
+                聊天
+              </Button>
+            </ListItem>
           ))}
-        </ul>
+        </List>
       ) : (
-        <p>您還沒有好友。</p>
+        <Typography variant="body1" color="textSecondary">
+          您還沒有好友。
+        </Typography>
       )}
-    </div>
-  );
+    </Paper>
+  </Box>
+);
 }
 
 export default FriendsList;

@@ -1,6 +1,8 @@
 // src/Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { TextField, Button, Box, Typography, CircularProgress } from '@mui/material'; // 引入 MUI 組件
+
 function Login() {
   const [username, setUsername] = useState(sessionStorage.getItem('username') || '');
   const [password, setPassword] = useState('');
@@ -62,29 +64,92 @@ function Login() {
     }
   };
 
-  return (
-    <div>
-      <h2>註冊 / 登入</h2>
-      <input
-        placeholder="用戶名"
-        value={username}
-        onChange={e => setUsername(e.target.value)}
-      />
-      <input
-        placeholder="密碼"
-        type="password"
-        value={password}
-        onChange={e => setPassword(e.target.value)}
-      />
-      <button onClick={handleRegister} disabled={loading}>
-        {loading ? '註冊中...' : '註冊'}
-      </button>
-      <button onClick={handleLogin} disabled={loading}>
-        {loading ? '登入中...' : '登入'}
-      </button>
-      <p>{message}</p>
-    </div>
-  );
+//   return (
+//     <div>
+//       <h2>註冊 / 登入</h2>
+//       <input
+//         placeholder="用戶名"
+//         value={username}
+//         onChange={e => setUsername(e.target.value)}
+//       />
+//       <input
+//         placeholder="密碼"
+//         type="password"
+//         value={password}
+//         onChange={e => setPassword(e.target.value)}
+//       />
+//       <button onClick={handleRegister} disabled={loading}>
+//         {loading ? '註冊中...' : '註冊'}
+//       </button>
+//       <button onClick={handleLogin} disabled={loading}>
+//         {loading ? '登入中...' : '登入'}
+//       </button>
+//       <p>{message}</p>
+//     </div>
+//   );
+// }
+
+// export default Login;
+return (
+  <Box
+    display="flex"
+    flexDirection="column"
+    alignItems="center"
+    justifyContent="center"
+    minHeight="100vh"
+    padding={2}
+  >
+    <Typography variant="h4" gutterBottom>註冊 / 登入</Typography>
+
+    <TextField
+      label="用戶名"
+      variant="outlined"
+      value={username}
+      onChange={e => setUsername(e.target.value)}
+      margin="normal"
+      fullWidth
+    />
+
+    <TextField
+      label="密碼"
+      type="password"
+      variant="outlined"
+      value={password}
+      onChange={e => setPassword(e.target.value)}
+      margin="normal"
+      fullWidth
+    />
+
+    <Box display="flex" justifyContent="space-between" width="100%" mt={2}>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleRegister}
+        disabled={loading}
+        fullWidth
+        style={{ marginRight: '10px' }}
+      >
+        {loading ? <CircularProgress size={24} /> : '註冊'}
+      </Button>
+
+      <Button
+        variant="contained"
+        color="secondary"
+        onClick={handleLogin}
+        disabled={loading}
+        fullWidth
+      >
+        {loading ? <CircularProgress size={24} /> : '登入'}
+      </Button>
+    </Box>
+
+    {message && (
+      <Typography color="error" variant="body1" mt={2}>
+        {message}
+      </Typography>
+    )}
+  </Box>
+);
 }
 
 export default Login;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'; 
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { TextField, Button, Box, Typography, Paper } from '@mui/material'; // 引入 MUI 元件
 
 function Chat() {
   const { matchId } = useParams();
@@ -77,7 +78,8 @@ function Chat() {
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       const { message, username } = data; // 獲取消息和用戶名
-    
+      console.log(`[DEBUG] 收到的消息: ${username}: ${message}`);
+
       // 檢查用戶名是否存在
       const displayName = username || 'Unknown';
     
@@ -140,27 +142,82 @@ function Chat() {
   
   
 
-  return (
-    <div>
-      <h2>聊天頁面</h2>
-      <p>配對對象：{matchedUser}</p>
-      <div style={{ border: '1px solid black', height: '300px', overflowY: 'scroll' }}>
-        {/* 顯示聊天記錄 */}
-        {chatLog.map((msg, index) => (
-          <p key={index}>{msg}</p>
-        ))}
-      </div>
-      <input
-        type="text"
-        placeholder="輸入消息"
+//   return (
+//     <div>
+//       <h2>聊天頁面</h2>
+//       <p>配對對象：{matchedUser}</p>
+//       <div style={{ border: '1px solid black', height: '300px', overflowY: 'scroll' }}>
+//         {/* 顯示聊天記錄 */}
+//         {chatLog.map((msg, index) => (
+//           <p key={index}>{msg}</p>
+//         ))}
+//       </div>
+//       <input
+//         type="text"
+//         placeholder="輸入消息"
+//         value={message}
+//         onChange={(e) => setMessage(e.target.value)}
+//       />
+//       <button onClick={handleSendMessage} disabled={!isConnected}>發送</button> {/* 新增發送按鈕 */}
+//       <button onClick={handleLike}>喜歡</button>
+//       <button onClick={handleLeave}>離開</button>
+//     </div>
+//   );
+// }
+
+// export default Chat;
+return (
+  <Box
+    display="flex"
+    flexDirection="column"
+    alignItems="center"
+    justifyContent="center"
+    padding={2}
+  >
+    <Typography variant="h4" gutterBottom>聊天頁面</Typography>
+    <Typography variant="body1" color="textSecondary" gutterBottom>
+      配對對象：{matchedUser}
+    </Typography>
+    
+    <Paper elevation={3} style={{ width: '100%', height: '300px', overflowY: 'scroll', padding: '10px', marginBottom: '20px' }}>
+      {chatLog.map((msg, index) => (
+        <Typography key={index} variant="body2" gutterBottom>
+          {msg}
+        </Typography>
+      ))}
+    </Paper>
+
+    {/* 將發送按鈕移到輸入框右側 */}
+    <Box display="flex" alignItems="center" sx={{ width: '100%' }}>
+      <TextField
+        fullWidth
+        label="輸入消息"
+        variant="outlined"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
+        sx={{ marginRight: 1 }} // 增加右側的間距
       />
-      <button onClick={handleSendMessage} disabled={!isConnected}>發送</button> {/* 新增發送按鈕 */}
-      <button onClick={handleLike}>喜歡</button>
-      <button onClick={handleLeave}>離開</button>
-    </div>
-  );
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleSendMessage}
+        disabled={!isConnected}
+        sx={{ padding: '10px 16px' }} // 控制按鈕大小
+      >
+        發送
+      </Button>
+    </Box>
+
+    <Box display="flex" justifyContent="space-between" width="100%" mt={2}>
+      <Button variant="outlined" color="secondary" onClick={handleLike} fullWidth sx={{ marginRight: 1 }}>
+        喜歡
+      </Button>
+      <Button variant="outlined" color="error" onClick={handleLeave} fullWidth>
+        離開
+      </Button>
+    </Box>
+  </Box>
+);
 }
 
 export default Chat;
