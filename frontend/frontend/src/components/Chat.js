@@ -210,7 +210,7 @@ return (
 
     <Box display="flex" justifyContent="space-between" width="100%" mt={2}>
       <Button variant="outlined" color="secondary" onClick={handleLike} fullWidth sx={{ marginRight: 1 }}>
-        喜歡
+      ❤
       </Button>
       <Button variant="outlined" color="error" onClick={handleLeave} fullWidth>
         離開

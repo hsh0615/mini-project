@@ -22,6 +22,7 @@ from django.db.models import Q
 
 # 初始化 Redis 連接
 redis_client = redis.Redis(host='localhost', port=6379, db=0)
+#redis_client = redis.Redis(host='redis', port=6379, db=0)
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +148,7 @@ class RegisterView(APIView):
 
 
 # 初始化 Redis 連接
-redis_client = redis.Redis(host='localhost', port=6379, db=0)
+#redis_client = redis.Redis(host='localhost', port=6379, db=0)
 #---使用者登入後快取到redis，並設定60秒過期---
 class LoginView(APIView):
     def post(self, request):
